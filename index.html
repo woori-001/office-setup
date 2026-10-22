@@ -101,6 +101,9 @@ button { font-family: inherit; }
 .chk { position: relative; display: flex; align-items: center; gap: 12px; padding: 13px 14px; border: 1.5px solid var(--line); border-radius: 13px; cursor: pointer; background: var(--card); transition: border-color .15s, background .15s; }
 .chk input { position: absolute; opacity: 0; pointer-events: none; }
 .chk .mono { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 14px; background: var(--bg); color: var(--muted); flex: none; transition: background .15s, color .15s; }
+.chk .mono.logo, .chk.on .mono.logo { background: none; padding: 0; overflow: hidden; }
+.mono.logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tlogo { width: 22px; height: 22px; border-radius: 6px; vertical-align: -6px; margin-right: 8px; object-fit: cover; }
 .chk .txt { min-width: 0; flex: 1; }
 .chk .txt b { display: block; font-size: 14px; font-weight: 700; }
 .chk .txt small { display: block; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -236,9 +239,9 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
       <div class="pick-wrap">
         <div class="tiles" id="tiles">
           <div class="tile-group"><div class="tile-label">기본 설치 · 항상 포함</div><div class="tile-row">
-            <label class="chk on req"><input type="checkbox" checked disabled><span class="mono">카</span><span class="txt"><b>카카오톡<span class="tag">기본</span></b><small>카카오 공식 서버</small></span><span class="tick" aria-hidden="true">✓</span></label>
-            <label class="chk on req"><input type="checkbox" checked disabled><span class="mono">웍</span><span class="txt"><b>네이버웍스<span class="tag">기본</span></b><small>네이버웍스 공식 서버</small></span><span class="tick" aria-hidden="true">✓</span></label>
-            <label class="chk on req"><input type="checkbox" checked disabled><span class="mono">말</span><span class="txt"><b>말랑메모<span class="tag">기본</span></b><small>GitHub 최신 릴리스</small></span><span class="tick" aria-hidden="true">✓</span></label>
+            <label class="chk on req"><input type="checkbox" checked disabled><span class="mono logo"><img src="img/kakao.png" alt=""></span><span class="txt"><b>카카오톡<span class="tag">기본</span></b><small>카카오 공식 서버</small></span><span class="tick" aria-hidden="true">✓</span></label>
+            <label class="chk on req"><input type="checkbox" checked disabled><span class="mono logo"><img src="img/works.png" alt=""></span><span class="txt"><b>네이버웍스<span class="tag">기본</span></b><small>네이버웍스 공식 서버</small></span><span class="tick" aria-hidden="true">✓</span></label>
+            <label class="chk on req"><input type="checkbox" checked disabled><span class="mono logo"><img src="img/mallang.png" alt=""></span><span class="txt"><b>말랑메모<span class="tag">기본</span></b><small>GitHub 최신 릴리스</small></span><span class="tick" aria-hidden="true">✓</span></label>
             <label class="chk on req"><input type="checkbox" checked disabled><span class="mono">S</span><span class="txt"><b>샌드박스<span class="tag">기본</span></b><small>Sandboxie-Plus 최신</small></span><span class="tick" aria-hidden="true">✓</span></label>
           </div></div>
           <div class="tile-group"><div class="tile-label">선택 설치 · 필요한 것만</div><div class="tile-row">
@@ -273,9 +276,9 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
         <table>
           <thead><tr><th>앱</th><th>구분</th><th>받는 곳</th><th>방식</th><th></th></tr></thead>
           <tbody>
-            <tr><td class="app-cell">카카오톡</td><td><span class="badge req">기본</span></td><td>카카오</td><td class="how"><span class="k direct">바로 다운로드</span></td><td class="btn-cell"><a class="dl" href="https://app-pc.kakaocdn.net/talk/win32/KakaoTalk_Setup.exe">다운로드</a></td></tr>
-            <tr><td class="app-cell">네이버웍스 <span class="sub">64bit</span></td><td><span class="badge req">기본</span></td><td>네이버웍스</td><td class="how"><span class="k direct">바로 다운로드</span></td><td class="btn-cell"><a class="dl" href="https://download.worksmobile.com/k/wminst/r/naverworks/message_win64_install">다운로드</a></td></tr>
-            <tr><td class="app-cell">말랑메모 <span class="sub" id="mlVer"></span></td><td><span class="badge req">기본</span></td><td>GitHub 릴리스</td><td class="how" id="mlHow"><span class="k page">릴리스 페이지</span> · exe 클릭</td><td class="btn-cell"><a class="dl" id="mlBtn" href="https://github.com/woori-001/Mallang/releases/latest" target="_blank" rel="noopener">페이지 열기</a></td></tr>
+            <tr><td class="app-cell"><img class="tlogo" src="img/kakao.png" alt="">카카오톡</td><td><span class="badge req">기본</span></td><td>카카오</td><td class="how"><span class="k direct">바로 다운로드</span></td><td class="btn-cell"><a class="dl" href="https://app-pc.kakaocdn.net/talk/win32/KakaoTalk_Setup.exe">다운로드</a></td></tr>
+            <tr><td class="app-cell"><img class="tlogo" src="img/works.png" alt="">네이버웍스 <span class="sub">64bit</span></td><td><span class="badge req">기본</span></td><td>네이버웍스</td><td class="how"><span class="k direct">바로 다운로드</span></td><td class="btn-cell"><a class="dl" href="https://download.worksmobile.com/k/wminst/r/naverworks/message_win64_install">다운로드</a></td></tr>
+            <tr><td class="app-cell"><img class="tlogo" src="img/mallang.png" alt="">말랑메모 <span class="sub" id="mlVer"></span></td><td><span class="badge req">기본</span></td><td>GitHub 릴리스</td><td class="how" id="mlHow"><span class="k page">릴리스 페이지</span> · exe 클릭</td><td class="btn-cell"><a class="dl" id="mlBtn" href="https://github.com/woori-001/Mallang/releases/latest" target="_blank" rel="noopener">페이지 열기</a></td></tr>
             <tr><td class="app-cell">샌드박스 <span class="sub">Sandboxie-Plus x64</span></td><td><span class="badge req">기본</span></td><td>GitHub 릴리스</td><td class="how" id="sbHow"><span class="k page">릴리스 페이지</span></td><td class="btn-cell"><a class="dl" id="sbBtn" href="https://github.com/sandboxie-plus/Sandboxie/releases/latest" target="_blank" rel="noopener">페이지 열기</a></td></tr>
             <tr><td class="app-cell">클로드</td><td><span class="badge opt">선택</span></td><td>Anthropic</td><td class="how"><span class="k direct">바로 다운로드</span></td><td class="btn-cell"><a class="dl" href="https://claude.ai/api/desktop/win32/x64/exe/latest/redirect">다운로드</a></td></tr>
             <tr><td class="app-cell">챗GPT</td><td><span class="badge opt">선택</span></td><td>MS 스토어</td><td class="how"><span class="k page">스토어</span> · "받기" 클릭</td><td class="btn-cell"><a class="dl" href="https://apps.microsoft.com/detail/9NT1R1C2HH7J" target="_blank" rel="noopener">스토어 열기</a></td></tr>
