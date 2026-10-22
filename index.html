@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>출근 설치 키트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;700;800&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column checklist — today's date strip, the one-shot install panel, then six app rows */
+:root {
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --ink: #16202a;
+  --muted: #5b6875;
+  --line: #d6dde4;
+  --accent: #1f5fd1;
+  --accent-ink: #ffffff;
+  --accent-soft: #e3ecfb;
+  --code-bg: #0f1a26;
+  --code-fg: #d7e3f0;
+  --ok: #1d7a4f;
+  --warn: #9a5b00;
+  --f-display: "Gothic A1", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f151c; --surface: #17202a; --ink: #e6ecf2; --muted: #96a3b0; --line: #283542;
+    --accent: #6d9cff; --accent-ink: #0b1220; --accent-soft: #1b2a44;
+    --code-bg: #0a1018; --code-fg: #cfdced; --ok: #5fcf97; --warn: #e3a646;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f151c; --surface: #17202a; --ink: #e6ecf2; --muted: #96a3b0; --line: #283542;
+  --accent: #6d9cff; --accent-ink: #0b1220; --accent-soft: #1b2a44;
+  --code-bg: #0a1018; --code-fg: #cfdced; --ok: #5fcf97; --warn: #e3a646;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: 15px; line-height: 1.6;
+}
+.wrap {
+  max-width: 760px; margin: 0 auto;
+  padding-block: 32px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 28px;
+}
+header { display: grid; gap: 6px; }
+.date {
+  font-family: var(--f-mono); font-size: 13px; color: var(--muted);
+  letter-spacing: .04em; font-variant-numeric: tabular-nums;
+}
+h1 {
+  font-family: var(--f-display); font-weight: 800; font-size: clamp(28px, 6vw, 38px);
+  line-height: 1.2; margin: 0; letter-spacing: -.01em; text-wrap: balance;
+}
+.lead { margin: 0; color: var(--muted); max-width: 60ch; }
+h2 {
+  font-family: var(--f-display); font-weight: 700; font-size: 19px; margin: 0;
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+}
+.tag {
+  font-family: var(--f-body); font-size: 12px; font-weight: 600;
+  padding: 2px 8px; border-radius: 4px;
+  background: var(--accent-soft); color: var(--accent);
+}
+
+/* one-shot panel */
+.oneshot {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 22px; display: grid; gap: 18px;
+}
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: s; }
+.steps li { display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: start; }
+.steps li::before {
+  counter-increment: s; content: counter(s);
+  width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center;
+  font-family: var(--f-mono); font-weight: 500; font-size: 14px;
+  border: 1.5px solid var(--accent); color: var(--accent);
+}
+.steps b { font-weight: 600; }
+.steps p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+kbd {
+  font-family: var(--f-mono); font-size: 12.5px;
+  border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px;
+  padding: 0 5px; background: var(--bg); color: var(--ink);
+}
+.copyrow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.btn {
+  appearance: none; border: 0; cursor: pointer;
+  font-family: var(--f-body); font-weight: 600; font-size: 15px;
+  padding: 11px 18px; border-radius: 8px;
+  background: var(--accent); color: var(--accent-ink);
+  text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+  transition: transform .08s ease, filter .15s ease;
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:active { transform: translateY(1px); }
+.btn:focus-visible, .dl:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.copied { font-size: 14px; color: var(--ok); font-weight: 600; }
+details { border-top: 1px solid var(--line); padding-top: 14px; }
+summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+.code {
+  margin-top: 12px; overflow: auto; max-height: 260px;
+  background: var(--code-bg); color: var(--code-fg); border-radius: 8px;
+}
+#script {
+  display: block; width: 100%; min-height: 240px; border: 0; resize: vertical;
+  background: transparent; color: inherit; padding: 14px;
+  font-family: var(--f-mono); font-size: 12px; line-height: 1.55; white-space: pre;
+}
+
+/* app list */
+.apps { display: grid; gap: 12px; }
+.list { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.row {
+  display: grid; grid-template-columns: 44px 1fr auto; gap: 14px; align-items: center;
+  padding: 14px 16px; border-top: 1px solid var(--line);
+}
+.row:first-child { border-top: 0; }
+.mono {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: grid; place-items: center;
+  font-family: var(--f-display); font-weight: 800; font-size: 17px;
+  background: var(--accent-soft); color: var(--accent);
+}
+.info { min-width: 0; }
+.name { font-weight: 600; }
+.how { font-size: 13px; color: var(--muted); }
+.how .k { font-weight: 600; }
+.how .k.direct { color: var(--ok); }
+.how .k.page { color: var(--warn); }
+.dl {
+  font-family: var(--f-body); font-weight: 600; font-size: 14px;
+  padding: 8px 14px; border-radius: 7px; text-decoration: none; white-space: nowrap;
+  border: 1.5px solid var(--accent); color: var(--accent); background: transparent;
+}
+.dl:hover { background: var(--accent-soft); }
+
+.notes { font-size: 13.5px; color: var(--muted); display: grid; gap: 6px; }
+.notes p { margin: 0; max-width: 66ch; }
+
+@media (max-width: 480px) {
+  .row { grid-template-columns: 40px 1fr; }
+  .mono { width: 40px; height: 40px; }
+  .dl { grid-column: 2; justify-self: start; }
+  .oneshot { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="date" id="today">오늘</div>
+    <h1>출근 설치 키트</h1>
+    <p class="lead">재부팅으로 초기화된 PC에 업무 앱 6개를 다시 설치하는 곳이에요. 모든 파일은 각 회사 공식 서버에서 받아서 항상 최신 버전이 설치됩니다.</p>
+  </header>
+
+  <section class="oneshot" aria-labelledby="h-oneshot">
+    <h2 id="h-oneshot">한 번에 전부 설치 <span class="tag">추천 · 약 3~5분</span></h2>
+    <ol class="steps">
+      <li><div><b>아래 버튼으로 설치 파일을 받아요.</b></div></li>
+      <li><div><b>받은 install-all.bat 파일을 열어요.</b>
+        <p>"보안 경고"가 뜨면 <b>실행</b>, "이 앱이 변경하도록 허용할까요?"가 뜨면 <b>예</b>. "Windows의 PC 보호" 창이 뜨면 <b>추가 정보 → 실행</b>.</p></div></li>
+      <li><div><b>검은 창에서 설치가 끝날 때까지 기다려요.</b>
+        <p>끝나면 결과표가 나와요. 실패한 앱은 다운로드 페이지가 자동으로 열리니 거기서 받아 주세요.</p></div></li>
+    </ol>
+    <div class="copyrow">
+      <a class="btn" id="batBtn" href="install-all.bat" download="install-all.bat">설치 파일 받기</a>
+    </div>
+    <details>
+      <summary>파일 실행이 막혀 있다면: 명령 붙여넣기로 설치</summary>
+      <ol class="steps" style="margin-top:12px">
+        <li><div><b>아래 버튼으로 설치 명령을 복사해요.</b></div></li>
+        <li><div><b>시작 버튼 우클릭 → "터미널(관리자)" → 예.</b><p>단축키는 <kbd>Win</kbd> + <kbd>X</kbd> 다음 <kbd>A</kbd>.</p></div></li>
+        <li><div><b>창에 붙여넣고 <kbd>Enter</kbd>.</b><p>여러 줄 붙여넣기 경고가 뜨면 "붙여넣기".</p></div></li>
+      </ol>
+      <div class="copyrow" style="margin-top:12px">
+        <button class="btn" id="copyBtn" type="button">설치 명령 복사</button>
+        <span class="copied" id="copied" hidden>복사됐어요. 터미널(관리자)에 붙여넣어 주세요.</span>
+      </div>
+      <div class="code"><textarea id="script" readonly spellcheck="false" aria-label="설치 명령">&amp; {
+# 출근 설치 키트 - 업무 앱 6종을 공식 배포처에서 최신 버전으로 자동 설치
+# 관리자 권한 PowerShell(터미널)에 붙여넣어 실행
+$ErrorActionPreference = 'Continue'
+$ProgressPreference = 'SilentlyContinue'
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+  Write-Host ''
+  Write-Host '[!] 관리자 권한이 아닙니다. 시작 버튼 우클릭 &gt; 터미널(관리자)에서 다시 붙여넣어 주세요.' -ForegroundColor Yellow
+  return
+}
+
+$work = Join-Path $env:TEMP 'office-setup'
+New-Item -ItemType Directory -Force -Path $work | Out-Null
+$hasWinget = [bool](Get-Command winget -ErrorAction SilentlyContinue)
+$results = New-Object System.Collections.Generic.List[object]
+
+function Install-Direct([string]$url, [string]$file, [string]$silentArgs) {
+  try {
+    $path = Join-Path $work $file
+    Invoke-WebRequest -Uri $url -OutFile $path -UseBasicParsing -UserAgent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+    if (-not (Test-Path $path) -or (Get-Item $path).Length -lt 100000) { return $false }
+    $p = Start-Process -FilePath $path -ArgumentList $silentArgs -Wait -PassThru
+    return ($p.ExitCode -eq 0)
+  } catch { return $false }
+}
+
+function Install-Winget([string]$id, [string]$source) {
+  if (-not $hasWinget) { return $false }
+  $a = @('install', '--id', $id, '--exact', '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
+  if ($source) { $a += @('--source', $source) }
+  &amp; winget @a | Out-Null
+  # 0 = 설치 완료, -1978335189 = 이미 최신 버전 설치됨
+  return ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq -1978335189)
+}
+
+function Step([string]$name, [scriptblock[]]$tries, [string]$fallbackUrl) {
+  Write-Host ("  - {0} 설치 중..." -f $name) -NoNewline
+  foreach ($t in $tries) {
+    if (&amp; $t) {
+      Write-Host ' 완료' -ForegroundColor Green
+      $results.Add([pscustomobject]@{ 앱 = $name; 결과 = '완료' })
+      return
+    }
+  }
+  Write-Host ' 실패' -ForegroundColor Red
+  $results.Add([pscustomobject]@{ 앱 = $name; 결과 = '실패 - 다운로드 페이지를 열었어요' })
+  if ($fallbackUrl) { Start-Process $fallbackUrl }
+}
+
+Write-Host ''
+Write-Host '출근 설치 키트 - 6개 앱을 차례로 설치합니다. 창을 닫지 말고 기다려 주세요.' -ForegroundColor Cyan
+Write-Host ''
+
+Step '카카오톡' @(
+  { Install-Direct 'https://app-pc.kakaocdn.net/talk/win32/KakaoTalk_Setup.exe' 'KakaoTalk_Setup.exe' '/S' },
+  { Install-Winget 'Kakao.KakaoTalk' }
+) 'https://www.kakaocorp.com/page/service/service/KakaoTalk'
+
+Step '네이버웍스' @(
+  { Install-Direct 'https://download.worksmobile.com/k/wminst/r/naverworks/message_win64_install' 'NAVERWORKS_Setup.exe' '/S' },
+  { Install-Winget 'WorksMobile.NAVERWORKS' }
+) 'https://naver.worksmobile.com/download/'
+
+Step '시놀로지 드라이브' @(
+  { Install-Winget 'SynoLogy.DriveClient' }
+) 'https://www.synology.com/ko-kr/support/download'
+
+Step '말랑메모' @(
+  {
+    try {
+      $rel = Invoke-RestMethod -Uri 'https://api.github.com/repos/woori-001/Mallang/releases/latest' -UseBasicParsing -Headers @{ 'User-Agent' = 'office-setup' }
+      $asset = $rel.assets | Where-Object { $_.name -like '*.exe' -and $_.name -notlike '*.blockmap' } | Select-Object -First 1
+      if (-not $asset) { return $false }
+      Install-Direct $asset.browser_download_url $asset.name '/S'
+    } catch { $false }
+  }
+) 'https://github.com/woori-001/Mallang/releases/latest'
+
+Step '클로드' @(
+  { Install-Winget 'Anthropic.Claude' },
+  { Install-Direct 'https://claude.ai/api/desktop/win32/x64/exe/latest/redirect' 'Claude_Setup.exe' '--silent' }
+) 'https://claude.ai/download'
+
+Step '챗GPT' @(
+  { Install-Winget '9NT1R1C2HH7J' 'msstore' }
+) 'https://apps.microsoft.com/detail/9NT1R1C2HH7J'
+
+Write-Host ''
+$results | Format-Table -AutoSize | Out-Host
+$failed = @($results | Where-Object { $_.결과 -ne '완료' }).Count
+if ($failed -eq 0) {
+  Write-Host '모두 설치됐어요. 이 창은 닫아도 됩니다.' -ForegroundColor Green
+} else {
+  Write-Host ("{0}개 앱은 자동 설치가 안 됐어요. 열린 페이지나 설치 페이지의 개별 버튼으로 받아 주세요." -f $failed) -ForegroundColor Yellow
+}
+Remove-Item -Recurse -Force $work -ErrorAction SilentlyContinue
+}
+</textarea></div>
+    </details>
+  </section>
+
+  <section class="apps" aria-labelledby="h-apps">
+    <h2 id="h-apps">하나씩 받기</h2>
+    <div class="list">
+      <div class="row">
+        <div class="mono" aria-hidden="true">카</div>
+        <div class="info"><div class="name">카카오톡</div><div class="how"><span class="k direct">바로 다운로드</span> · 카카오 공식 서버</div></div>
+        <a class="dl" href="https://app-pc.kakaocdn.net/talk/win32/KakaoTalk_Setup.exe" target="_blank" rel="noopener">다운로드</a>
+      </div>
+      <div class="row">
+        <div class="mono" aria-hidden="true">웍</div>
+        <div class="info"><div class="name">네이버웍스</div><div class="how"><span class="k direct">바로 다운로드</span> · 네이버웍스 공식 서버 (64bit)</div></div>
+        <a class="dl" href="https://download.worksmobile.com/k/wminst/r/naverworks/message_win64_install" target="_blank" rel="noopener">다운로드</a>
+      </div>
+      <div class="row">
+        <div class="mono" aria-hidden="true">시</div>
+        <div class="info"><div class="name">시놀로지 드라이브</div><div class="how"><span class="k page">공식 페이지</span> · 데스크톱 유틸리티에서 Synology Drive Client 선택</div></div>
+        <a class="dl" href="https://www.synology.com/ko-kr/support/download" target="_blank" rel="noopener">페이지 열기</a>
+      </div>
+      <div class="row">
+        <div class="mono" aria-hidden="true">말</div>
+        <div class="info"><div class="name">말랑메모</div><div class="how" id="mlHow"><span class="k page">최신 릴리스</span> · MallangMemo-Setup-버전.exe 클릭</div></div>
+        <a class="dl" id="mlBtn" href="https://github.com/woori-001/Mallang/releases/latest" target="_blank" rel="noopener">페이지 열기</a>
+      </div>
+      <div class="row">
+        <div class="mono" aria-hidden="true">C</div>
+        <div class="info"><div class="name">클로드</div><div class="how"><span class="k direct">바로 다운로드</span> · Anthropic 공식 서버</div></div>
+        <a class="dl" href="https://claude.ai/api/desktop/win32/x64/exe/latest/redirect" target="_blank" rel="noopener">다운로드</a>
+      </div>
+      <div class="row">
+        <div class="mono" aria-hidden="true">G</div>
+        <div class="info"><div class="name">챗GPT</div><div class="how"><span class="k page">MS 스토어</span> · 열린 페이지에서 "받기"</div></div>
+        <a class="dl" href="https://apps.microsoft.com/detail/9NT1R1C2HH7J" target="_blank" rel="noopener">스토어 열기</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="notes">
+    <p>하드보안관 때문에 재부팅하면 설치한 앱이 다시 사라져요. 매일 아침 이 페이지에서 설치하면 됩니다.</p>
+    <p>설치가 안 되거나 링크가 열리지 않으면 관리 담당자에게 알려 주세요.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var d = new Date();
+  var days = ['일', '월', '화', '수', '목', '금', '토'];
+  var t = document.getElementById('today');
+  t.textContent = d.getFullYear() + '. ' + (d.getMonth() + 1) + '. ' + d.getDate() + '. (' + days[d.getDay()] + ')  오늘 아침 설치';
+
+  var btn = document.getElementById('copyBtn');
+  var ta = document.getElementById('script');
+  var msg = document.getElementById('copied');
+  function done() { msg.hidden = false; btn.textContent = '다시 복사'; }
+  function fallback() {
+    var det = ta.closest('details'); if (det) det.open = true;
+    ta.focus(); ta.select();
+    try { if (document.execCommand('copy')) { done(); return; } } catch (e) {}
+    msg.textContent = '자동 복사가 안 됐어요. 선택된 내용을 Ctrl + C로 복사해 주세요.';
+    msg.hidden = false;
+  }
+  btn.addEventListener('click', function () {
+    var text = ta.value;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else { fallback(); }
+  });
+  fetch('https://api.github.com/repos/woori-001/Mallang/releases/latest')
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (rel) {
+      if (!rel || !rel.assets) return;
+      var a = rel.assets.filter(function (x) { return /\.exe$/i.test(x.name); })[0];
+      if (!a) return;
+      var b = document.getElementById('mlBtn');
+      b.href = a.browser_download_url; b.textContent = '다운로드'; b.removeAttribute('target');
+      document.getElementById('mlHow').innerHTML = '<span class="k direct">바로 다운로드</span> · 최신 ' + String(rel.tag_name).replace(/[<>&]/g, '') + ' · GitHub 릴리스';
+    }).catch(function () {});
+})();
+</script>
+</body>
+</html>
