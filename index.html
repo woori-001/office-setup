@@ -98,7 +98,10 @@ button { font-family: inherit; }
 .tile-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .tile-row.r3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .tile-row.r5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-@media (max-width: 1400px) { .tile-row.r5 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.tile-row.r5 .chk { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; }
+.tile-row.r5 .chk .tick { position: absolute; top: 10px; right: 10px; }
+.tile-row.r5 .chk .txt { width: 100%; }
+@media (max-width: 1100px) { .tile-row.r5 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 1280px) { .tile-row.r3, .tile-row.r5 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 420px) { .tile-row.r3, .tile-row.r5 { grid-template-columns: 1fr; } }
 .chk { position: relative; display: flex; align-items: center; gap: 12px; padding: 13px 14px; border: 1.5px solid var(--line); border-radius: 13px; cursor: pointer; background: var(--card); transition: border-color .15s, background .15s; }
