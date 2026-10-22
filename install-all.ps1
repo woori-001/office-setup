@@ -1,6 +1,6 @@
 & {
 # 출근 설치 키트 - 업무 앱을 공식 배포처에서 최신 버전으로 동시에 설치
-# 필수: 카카오톡, 네이버웍스, 말랑메모 / 선택: 클로드, 챗GPT, CTI통계, 시놀로지 드라이브
+# 기본: 카카오톡, 네이버웍스, 말랑메모 / 선택: 클로드, 챗GPT, CTI통계, 시놀로지 드라이브
 # 선택 앱은 맨 위의 $Pick 으로 정해요. 예: $Pick = @('claude','chatgpt','cti','synology')
 $ErrorActionPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
@@ -16,58 +16,86 @@ if (-not $isAdmin) {
 }
 
 $work = Join-Path $env:TEMP 'office-setup'
+Remove-Item -Recurse -Force $work -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $work | Out-Null
 $hasWinget = [bool](Get-Command winget -ErrorAction SilentlyContinue)
 $desktop = [Environment]::GetFolderPath('Desktop')
 
-# 앱 목록 (설치 순서 = 표시 순서)
+# 앱 목록 (표시 순서). est = 보통 걸리는 설치 시간(초), 진행률 추정에 사용
 $apps = @(
-  @{ key = 'kakao'; name = '카카오톡'; required = $true
+  @{ key = 'kakao'; name = '카카오톡'; required = $true; est = 25
      tries = @(
        @{ kind = 'direct'; url = 'https://app-pc.kakaocdn.net/talk/win32/KakaoTalk_Setup.exe'; file = 'KakaoTalk_Setup.exe'; args = '/S' },
        @{ kind = 'winget'; id = 'Kakao.KakaoTalk' })
-     shortcut = @{ name = '카카오톡'; paths = @('%ProgramFiles(x86)%\Kakao\KakaoTalk\KakaoTalk.exe', '%ProgramFiles%\Kakao\KakaoTalk\KakaoTalk.exe', '%LOCALAPPDATA%\Kakao\KakaoTalk\KakaoTalk.exe') }
+     shortcut = @{ name = '카카오톡'; paths = @('%ProgramFiles(x86)%\Kakao\KakaoTalk\KakaoTalk.exe', '%ProgramFiles%\Kakao\KakaoTalk\KakaoTalk.exe', '%LOCALAPPDATA%\Kakao\KakaoTalk\KakaoTalk.exe'); start = '^KakaoTalk|카카오톡' }
      page = 'https://www.kakaocorp.com/page/service/service/KakaoTalk' },
-  @{ key = 'works'; name = '네이버웍스'; required = $true
+  @{ key = 'works'; name = '네이버웍스'; required = $true; est = 30
      tries = @(
        @{ kind = 'direct'; url = 'https://download.worksmobile.com/k/wminst/r/naverworks/message_win64_install'; file = 'NAVERWORKS_Setup.exe'; args = '/S' },
        @{ kind = 'winget'; id = 'WorksMobile.NAVERWORKS' })
      page = 'https://naver.worksmobile.com/download/' },
-  @{ key = 'mallang'; name = '말랑메모'; required = $true
+  @{ key = 'mallang'; name = '말랑메모'; required = $true; est = 30
      tries = @(@{ kind = 'github'; repo = 'woori-001/Mallang'; args = '/S' })
      page = 'https://github.com/woori-001/Mallang/releases/latest' },
-  @{ key = 'claude'; name = '클로드'; required = $false
+  @{ key = 'claude'; name = '클로드'; required = $false; est = 45
      tries = @(
        @{ kind = 'winget'; id = 'Anthropic.Claude' },
        @{ kind = 'direct'; url = 'https://claude.ai/api/desktop/win32/x64/exe/latest/redirect'; file = 'Claude_Setup.exe'; args = '--silent' })
+     shortcut = @{ name = '클로드'; paths = @('%LOCALAPPDATA%\AnthropicClaude\claude.exe'); start = '^Claude$'; pkg = 'Claude' }
+     verify = $true
      page = 'https://claude.ai/download' },
-  @{ key = 'chatgpt'; name = '챗GPT'; required = $false
+  @{ key = 'chatgpt'; name = '챗GPT'; required = $false; est = 45
      tries = @(@{ kind = 'winget'; id = '9NT1R1C2HH7J'; source = 'msstore' })
-     page = 'https://apps.microsoft.com/detail/9NT1R1C2HH7J' },
-  @{ key = 'cti'; name = 'CTI통계'; required = $false
+     shortcut = @{ name = '챗GPT'; paths = @(); start = '^ChatGPT'; pkg = '*ChatGPT*' }
+     verify = $true
+     page = 'ms-windows-store://pdp/?ProductId=9NT1R1C2HH7J' },
+  @{ key = 'cti'; name = 'CTI통계'; required = $false; est = 20
      tries = @(@{ kind = 'auto'; url = 'http://otosolution.com/solution/CTIadmin/CTIadmin_Setup.exe'; file = 'CTIadmin_Setup.exe' })
      page = 'http://7123.kr/CRM4DownLoad.aspx' },
-  @{ key = 'synology'; name = '시놀로지 드라이브'; required = $false
+  @{ key = 'synology'; name = '시놀로지 드라이브'; required = $false; est = 40
      tries = @(
        @{ kind = 'synology' },
        @{ kind = 'winget'; id = 'SynoLogy.DriveClient' })
      page = 'https://www.synology.com/ko-kr/support/download/DS925+?version=7.4#utilities' }
 )
 
-# 앱 하나를 설치하는 작업 (각 앱이 별도 프로세스에서 동시에 실행됨)
+# 앱 하나를 설치하는 작업 (앱마다 별도 프로세스에서 동시에 실행)
+# 진행 상황은 상태 파일(st-앱.txt)에 적어서 메인 화면이 읽어 가요: dl:퍼센트 / inst / wg
 $installJob = {
-  param($app, $work, $hasWinget, $desktop)
+  param($app, $work, $hasWinget)
   $ProgressPreference = 'SilentlyContinue'
   [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
   $ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+  $statusFile = Join-Path $work ('st-' + $app.key + '.txt')
+
+  function Set-Status([string]$s) { try { [IO.File]::WriteAllText($statusFile, $s) } catch { } }
 
   function Get-File([string]$url, [string]$file) {
     $path = Join-Path $work $file
-    Invoke-WebRequest -Uri $url -OutFile $path -UseBasicParsing -UserAgent $ua
-    if (-not (Test-Path $path) -or (Get-Item $path).Length -lt 100000) { throw 'download failed' }
+    Set-Status 'dl:0'
+    $req = [Net.HttpWebRequest]::Create($url)
+    $req.UserAgent = $ua
+    $req.AllowAutoRedirect = $true
+    $resp = $req.GetResponse()
+    $total = $resp.ContentLength
+    $in = $resp.GetResponseStream()
+    $out = [IO.File]::Create($path)
+    try {
+      $buf = New-Object byte[] 262144
+      $done = 0; $last = -1
+      while (($n = $in.Read($buf, 0, $buf.Length)) -gt 0) {
+        $out.Write($buf, 0, $n); $done += $n
+        if ($total -gt 0) {
+          $pct = [int][Math]::Floor($done * 100 / $total)
+          if ($pct -ne $last) { Set-Status ('dl:' + $pct); $last = $pct }
+        }
+      }
+    } finally { $out.Close(); $in.Close(); $resp.Close() }
+    if ((Get-Item $path).Length -lt 100000) { throw 'download failed' }
     return $path
   }
   function Run-Installer([string]$path, [string]$silentArgs) {
+    Set-Status 'inst'
     if ($path -like '*.msi') {
       # 다른 설치가 Windows Installer를 쓰는 중이면(1618) 잠시 기다렸다 다시 시도
       for ($i = 0; $i -lt 12; $i++) {
@@ -87,6 +115,7 @@ $installJob = {
         'direct' { return (Run-Installer (Get-File $t.url $t.file) $t.args) }
         'winget' {
           if (-not $hasWinget) { return $false }
+          Set-Status 'wg'
           $a = @('install', '--id', $t.id, '--exact', '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
           if ($t.source) { $a += @('--source', $t.source) }
           & winget @a | Out-Null
@@ -124,60 +153,145 @@ $installJob = {
 
   $ok = $false
   foreach ($t in $app.tries) { if (Try-One $t) { $ok = $true; break } }
-
-  if ($ok -and $app.shortcut) {
-    try {
-      $target = $app.shortcut.paths | ForEach-Object { [Environment]::ExpandEnvironmentVariables($_) } | Where-Object { Test-Path $_ } | Select-Object -First 1
-      if ($target) {
-        $lnk = Join-Path $desktop ($app.shortcut.name + '.lnk')
-        $ws = New-Object -ComObject WScript.Shell
-        $s = $ws.CreateShortcut($lnk)
-        $s.TargetPath = $target
-        $s.WorkingDirectory = Split-Path $target
-        $s.Save()
-      }
-    } catch { }
-  }
   return $ok
 }
+
+# 시작 메뉴에서 앱을 찾아요 (스토어 앱 확인용)
+function Find-StartApp([string]$pattern) {
+  try { return (Get-StartApps | Where-Object { $_.Name -match $pattern } | Select-Object -First 1) } catch { return $null }
+}
+
+# 바탕화면 바로가기 만들기. 실행 파일이 있으면 그걸로, 스토어 앱이면 시작 메뉴 항목으로 연결
+function New-DesktopShortcut($sc) {
+  $lnkPath = Join-Path $desktop ($sc.name + '.lnk')
+  $ws = New-Object -ComObject WScript.Shell
+  $exe = @($sc.paths) | ForEach-Object { [Environment]::ExpandEnvironmentVariables($_) } | Where-Object { $_ -and (Test-Path $_) } | Select-Object -First 1
+  if ($exe) {
+    $s = $ws.CreateShortcut($lnkPath)
+    $s.TargetPath = $exe
+    $s.WorkingDirectory = Split-Path $exe
+    $s.Save()
+    return $true
+  }
+  $sa = Find-StartApp $sc.start
+  if (-not $sa) { return $false }
+  $s = $ws.CreateShortcut($lnkPath)
+  $s.TargetPath = Join-Path $env:WINDIR 'explorer.exe'
+  $s.Arguments = 'shell:AppsFolder\' + $sa.AppID
+  $icon = $null
+  if ($sc.pkg) {
+    $pkg = Get-AppxPackage -Name $sc.pkg -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($pkg -and $pkg.InstallLocation) {
+      $icon = Get-ChildItem -Path $pkg.InstallLocation -Filter '*.exe' -Recurse -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -notmatch 'helper|crash|update|squirrel|elevat' } | Select-Object -First 1
+    }
+  }
+  if ($icon) { $s.IconLocation = $icon.FullName + ',0' }
+  $s.Save()
+  return $true
+}
+
+# 화면 표시 도우미 (한글은 두 칸 너비)
+function Get-Width([string]$s) {
+  $w = 0
+  foreach ($ch in $s.ToCharArray()) { if ([int]$ch -ge 0x1100) { $w += 2 } else { $w += 1 } }
+  return $w
+}
+function Pad([string]$s, [int]$n) { $g = $n - (Get-Width $s); if ($g -gt 0) { return $s + (' ' * $g) } else { return $s } }
 
 $targets = @($apps | Where-Object { $_.required -or ($picked -contains $_.key) })
 
 Write-Host ''
-Write-Host '출근 설치 키트' -ForegroundColor Cyan
-Write-Host ('설치할 앱: ' + (($targets | ForEach-Object { $_.name }) -join ', '))
-Write-Host '모든 앱을 동시에 설치합니다. 창을 닫지 말고 기다려 주세요.'
+Write-Host '  출근 설치 키트' -ForegroundColor Cyan
+Write-Host ('  {0}개 앱을 동시에 설치합니다. 창을 닫지 말고 기다려 주세요.' -f $targets.Count)
 Write-Host ''
 
 $started = Get-Date
-$jobs = @()
+$rows = @()
 foreach ($a in $targets) {
-  $j = Start-Job -Name $a.key -ScriptBlock $installJob -ArgumentList $a, $work, $hasWinget, $desktop
-  $jobs += [pscustomobject]@{ job = $j; app = $a; done = $false; ok = $false }
+  $j = Start-Job -Name $a.key -ScriptBlock $installJob -ArgumentList $a, $work, $hasWinget
+  $rows += [pscustomobject]@{ job = $j; app = $a; state = 'run'; ok = $false; pct = 0; note = '준비 중'; instAt = $null; secs = 0 }
 }
 
-while (@($jobs | Where-Object { -not $_.done }).Count -gt 0) {
-  foreach ($r in ($jobs | Where-Object { -not $_.done })) {
+# 진행 화면을 그릴 자리를 확보
+$canRedraw = $true
+try {
+  foreach ($r in $rows) { Write-Host '' }
+  $top = [Console]::CursorTop - $rows.Count
+} catch { $canRedraw = $false }
+
+$spin = @('|', '/', '-', '\')
+$tick = 0
+$doneCount = 0
+while ($doneCount -lt $rows.Count) {
+  $tick++
+  foreach ($r in $rows) {
+    if ($r.state -ne 'run') { continue }
+    $el = ((Get-Date) - $started).TotalSeconds
     if ($r.job.State -ne 'Running' -and $r.job.State -ne 'NotStarted') {
       $out = Receive-Job $r.job -ErrorAction SilentlyContinue
       $r.ok = [bool](@($out) | Select-Object -Last 1)
-      $r.done = $true
-      $sec = [int]((Get-Date) - $started).TotalSeconds
-      if ($r.ok) { Write-Host ('  [완료] {0}  ({1}초)' -f $r.app.name, $sec) -ForegroundColor Green }
-      else { Write-Host ('  [실패] {0}  - 다운로드 페이지를 열어요' -f $r.app.name) -ForegroundColor Red; Start-Process $r.app.page }
       Remove-Job $r.job -Force -ErrorAction SilentlyContinue
+      $r.secs = [int]$el
+      if ($r.ok -and $r.app.verify) {
+        # 스토어 앱은 실제로 시작 메뉴에 나타날 때까지 확인 (최대 30초)
+        $r.note = '설치 확인 중'
+        $found = $false
+        for ($i = 0; $i -lt 15 -and -not $found; $i++) {
+          if (Find-StartApp $r.app.shortcut.start) { $found = $true } else { Start-Sleep -Seconds 2 }
+        }
+        $r.ok = $found
+      }
+      if ($r.ok -and $r.app.shortcut) { try { [void](New-DesktopShortcut $r.app.shortcut) } catch { } }
+      $r.state = 'done'
+      $doneCount++
+      if ($r.ok) { $r.pct = 100; $r.note = ('완료 ({0}초)' -f $r.secs) }
+      else { $r.note = '실패 - 설치 페이지를 열었어요'; try { Start-Process $r.app.page } catch { } }
+      continue
+    }
+    $st = ''
+    try { $st = [IO.File]::ReadAllText((Join-Path $work ('st-' + $r.app.key + '.txt'))) } catch { }
+    $est = [double]$r.app.est
+    if ($st -like 'dl:*') {
+      $d = [int]($st.Substring(3))
+      $r.pct = [int]($d * 0.6)
+      $r.note = ('다운로드 중 {0}%' -f $d)
+    } elseif ($st -eq 'inst' -or $st -eq 'wg') {
+      if (-not $r.instAt) { $r.instAt = Get-Date }
+      $ie = ((Get-Date) - $r.instAt).TotalSeconds
+      if ($st -eq 'inst') { $base = 60; $span = 38 } else { $base = 0; $span = 98 }
+      $r.pct = [int][Math]::Min($base + $span, $base + $span * (1 - [Math]::Exp(-2 * $ie / $est)))
+      $r.note = '설치 중 ' + $spin[$tick % 4]
     }
   }
-  Start-Sleep -Milliseconds 700
+
+  if ($canRedraw) {
+    try {
+      [Console]::SetCursorPosition(0, $top)
+      foreach ($r in $rows) {
+        $filled = [int][Math]::Floor($r.pct / 10)
+        $bar = ('■' * $filled) + ('□' * (10 - $filled))
+        $line = '  ' + (Pad $r.app.name 18) + $bar + ('{0,5}%  ' -f $r.pct) + $r.note
+        $color = 'Gray'
+        if ($r.state -eq 'done') { if ($r.ok) { $color = 'Green' } else { $color = 'Red' } }
+        Write-Host (Pad $line 76) -ForegroundColor $color
+      }
+    } catch { $canRedraw = $false }
+  } elseif ($tick % 10 -eq 0) {
+    Write-Host ('  진행 중... {0}/{1}개 끝남' -f $doneCount, $rows.Count)
+  }
+  Start-Sleep -Milliseconds 400
 }
 
-$failed = @($jobs | Where-Object { -not $_.ok }).Count
+if (-not $canRedraw) { foreach ($r in $rows) { Write-Host ('  {0}  {1}' -f $r.app.name, $r.note) } }
+
+$failed = @($rows | Where-Object { -not $_.ok }).Count
 $total = [int]((Get-Date) - $started).TotalSeconds
 Write-Host ''
 if ($failed -eq 0) {
-  Write-Host ('모두 설치됐어요. ({0}초) 이 창은 닫아도 됩니다.' -f $total) -ForegroundColor Green
+  Write-Host ('  모두 설치됐어요. 총 {0}초. 이 창은 닫아도 됩니다.' -f $total) -ForegroundColor Green
 } else {
-  Write-Host ('{0}개 앱은 자동 설치가 안 됐어요. 열린 페이지에서 받아 주세요.' -f $failed) -ForegroundColor Yellow
+  Write-Host ('  {0}개 앱은 자동 설치가 안 됐어요. 열린 페이지에서 받아 주세요. (총 {1}초)' -f $failed, $total) -ForegroundColor Yellow
 }
 Remove-Item -Recurse -Force $work -ErrorAction SilentlyContinue
 }
