@@ -195,11 +195,6 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
         <span><b>하나씩 받기</b><small>앱별 공식 다운로드</small></span>
       </a>
     </nav>
-    <div class="divider"></div>
-    <div class="cal" aria-label="이번 달 달력">
-      <div class="cal-head" id="calHead">2026년 10월</div>
-      <div class="cal-grid" id="calGrid"></div>
-    </div>
     <div class="meta">
       <div><span>받는 곳</span><b>공식 서버</b></div>
       <div><span>말랑메모</span><b id="mlSide">최신 확인 중</b></div>
@@ -224,32 +219,6 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
       </div>
     </div>
 
-    <section class="kpis" aria-label="설치 요약">
-      <div class="kpi">
-        <div class="kpi-label">설치할 앱</div>
-        <div class="kpi-value"><span id="kCount">3</span><small>개</small></div>
-        <span class="pill" id="kSplit">기본 3 · 선택 0</span>
-        <div class="kpi-note" id="kNames">카카오톡 · 네이버웍스 · 말랑메모</div>
-      </div>
-      <div class="kpi hot">
-        <div class="kpi-label">예상 소요 시간</div>
-        <div class="kpi-value" id="kTime">약 1분</div>
-        <span class="pill">동시 설치</span>
-        <div class="kpi-note">7개 전체 설치 테스트 59초 · 앱별 진행률 표시</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">말랑메모</div>
-        <div class="kpi-value" id="kMl">최신</div>
-        <span class="pill">자동 최신</span>
-        <div class="kpi-note">GitHub 릴리스에서 매번 최신 버전을 받아요</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">바탕화면 바로가기</div>
-        <div class="kpi-value"><span id="kSc">1</span><small>개</small></div>
-        <span class="pill">자동 생성</span>
-        <div class="kpi-note" id="kScNames">카카오톡</div>
-      </div>
-    </section>
 
     <section class="panel" id="install" aria-labelledby="h-install">
       <div class="panel-head">
@@ -333,34 +302,26 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
   var d = new Date(), days = ['일', '월', '화', '수', '목', '금', '토'];
   document.getElementById('title').textContent = (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + days[d.getDay()] + '요일 출근 설치';
 
-  // 사이드바 달력
-  document.getElementById('calHead').textContent = d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월';
-  var grid = document.getElementById('calGrid'), html = '';
-  days.forEach(function (x) { html += '<span class="dow">' + x + '</span>'; });
-  var first = new Date(d.getFullYear(), d.getMonth(), 1).getDay();
-  var last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-  for (var i = 0; i < first; i++) html += '<span></span>';
-  for (var n = 1; n <= last; n++) html += '<span class="' + (n === d.getDate() ? 'today' : 'cur') + '">' + n + '</span>';
-  grid.innerHTML = html;
 
   var boxes = [].slice.call(document.querySelectorAll('#tiles input:not([disabled])'));
   var ta = document.getElementById('script');
   var ps = '';
 
+  function setText(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; }
   function picked() { return boxes.filter(function (b) { return b.checked; }); }
   function pickLine() { return '$Pick = @(' + picked().map(function (b) { return "'" + b.value + "'"; }).join(',') + ')'; }
 
   function refresh() {
     boxes.forEach(function (b) { b.closest('.chk').classList.toggle('on', b.checked); });
     var p = picked(), total = 3 + p.length;
-    document.getElementById('kCount').textContent = total;
+    setText('kCount', total);
     document.getElementById('btnCount').textContent = total;
-    document.getElementById('kSplit').textContent = '기본 3 · 선택 ' + p.length;
-    document.getElementById('kNames').textContent = ['카카오톡', '네이버웍스', '말랑메모'].concat(p.map(function (b) { return b.dataset.name; })).join(' · ');
-    document.getElementById('kTime').textContent = total <= 3 ? '약 40초' : '약 1분';
+    setText('kSplit', '기본 3 · 선택 ' + p.length);
+    setText('kNames', ['카카오톡', '네이버웍스', '말랑메모'].concat(p.map(function (b) { return b.dataset.name; })).join(' · '));
+    setText('kTime', total <= 3 ? '약 40초' : '약 1분');
     var sc = ['카카오톡'].concat(p.filter(function (b) { return b.dataset.sc; }).map(function (b) { return b.dataset.name; }));
-    document.getElementById('kSc').textContent = sc.length;
-    document.getElementById('kScNames').textContent = sc.join(' · ');
+    setText('kSc', sc.length);
+    setText('kScNames', sc.join(' · '));
     document.getElementById('selBase').classList.toggle('on', p.length === 0);
     document.getElementById('selAll').classList.toggle('on', p.length === boxes.length);
     document.getElementById('presetWrap').hidden = p.length === 0;
@@ -438,7 +399,7 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
       b.href = a.browser_download_url; b.textContent = '다운로드'; b.removeAttribute('target');
       document.getElementById('mlHow').innerHTML = '<span class="k direct">바로 다운로드</span>';
       document.getElementById('mlVer').textContent = tag;
-      document.getElementById('kMl').textContent = tag;
+      setText('kMl', tag);
       document.getElementById('mlSide').textContent = tag;
     }).catch(function () {});
 })();
