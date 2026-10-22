@@ -157,141 +157,83 @@ summary { cursor: pointer; color: var(--muted); font-size: 14px; }
   .oneshot { padding: 18px; }
 }
 @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+.pick { display: grid; gap: 14px; }
+.pick-group { display: grid; gap: 8px; }
+.pick-label { font-size: 12.5px; font-weight: 600; color: var(--muted); letter-spacing: .04em; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;
+  padding: 8px 13px; border-radius: 999px; font-weight: 500; font-size: 14.5px;
+  border: 1.5px solid var(--line); background: var(--bg); color: var(--ink);
+}
+.chip input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+.chip.on { border-color: var(--accent); background: var(--accent-soft); }
+.chip.fixed { cursor: default; opacity: .85; }
+.chip:focus-within { outline: 3px solid var(--accent); outline-offset: 2px; }
+.btn.ghost { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); padding: 9px 16px; }
+.hint { font-size: 13.5px; color: var(--muted); }
+.linkbtn { appearance: none; border: 0; background: none; padding: 0; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; text-decoration: underline; word-break: break-all; }
+.steps.sub { margin: 12px 0; }
+details .copyrow { margin-bottom: 4px; }
+.req { font-size: 11.5px; font-weight: 600; padding: 1px 6px; border-radius: 4px; background: var(--accent-soft); color: var(--accent); margin-left: 4px; vertical-align: 1px; }
+.mono { font-size: 15px; }
 </style>
 </head>
 <body>
-
 <div class="wrap">
   <header>
-    <div class="date" id="today">오늘</div>
+    <div class="date" id="today">오늘 아침 설치</div>
     <h1>출근 설치 키트</h1>
-    <p class="lead">재부팅으로 초기화된 PC에 업무 앱 6개를 다시 설치하는 곳이에요. 모든 파일은 각 회사 공식 서버에서 받아서 항상 최신 버전이 설치됩니다.</p>
+    <p class="lead">재부팅으로 초기화된 PC에 업무 앱을 다시 설치하는 곳이에요. 모든 파일은 각 회사 공식 서버에서 받아서 항상 최신 버전이 설치됩니다.</p>
   </header>
 
   <section class="oneshot" aria-labelledby="h-oneshot">
-    <h2 id="h-oneshot">한 번에 전부 설치 <span class="tag">추천 · 약 3~5분</span></h2>
+    <h2 id="h-oneshot">한 번에 설치 <span class="tag">동시 설치</span></h2>
+
+    <div class="pick">
+      <div class="pick-group">
+        <div class="pick-label">기본 설치</div>
+        <div class="chips">
+          <label class="chip on fixed"><input type="checkbox" checked disabled> 카카오톡</label>
+          <label class="chip on fixed"><input type="checkbox" checked disabled> 네이버웍스</label>
+          <label class="chip on fixed"><input type="checkbox" checked disabled> 말랑메모</label>
+        </div>
+      </div>
+      <div class="pick-group">
+        <div class="pick-label">필요한 것만 선택</div>
+        <div class="chips" id="optChips">
+          <label class="chip"><input type="checkbox" id="opt-claude" value="claude"> 클로드</label>
+          <label class="chip"><input type="checkbox" id="opt-chatgpt" value="chatgpt"> 챗GPT</label>
+          <label class="chip"><input type="checkbox" id="opt-cti" value="cti"> CTI통계</label>
+          <label class="chip"><input type="checkbox" id="opt-synology" value="synology"> 시놀로지 드라이브</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="copyrow">
+      <button class="btn" id="batBtn" type="button">설치 파일 받기 · <span id="count">3</span>개 앱</button>
+      <span class="hint" id="presetWrap" hidden>내 선택이 담긴 링크: <button class="linkbtn" id="presetBtn" type="button">복사</button></span>
+    </div>
+
     <ol class="steps">
-      <li><div><b>아래 버튼으로 설치 파일을 받아요.</b></div></li>
       <li><div><b>받은 install-all.bat 파일을 열어요.</b>
         <p>"보안 경고"가 뜨면 <b>실행</b>, "이 앱이 변경하도록 허용할까요?"가 뜨면 <b>예</b>. "Windows의 PC 보호" 창이 뜨면 <b>추가 정보 → 실행</b>.</p></div></li>
       <li><div><b>검은 창에서 설치가 끝날 때까지 기다려요.</b>
-        <p>끝나면 결과표가 나와요. 실패한 앱은 다운로드 페이지가 자동으로 열리니 거기서 받아 주세요.</p></div></li>
+        <p>선택한 앱이 동시에 설치되고, 끝나는 순서대로 [완료]가 표시돼요. 실패한 앱은 다운로드 페이지가 자동으로 열려요. 카카오톡 바로가기는 바탕화면에 만들어져요.</p></div></li>
     </ol>
-    <div class="copyrow">
-      <a class="btn" id="batBtn" href="install-all.bat" download="install-all.bat">설치 파일 받기</a>
-    </div>
+
     <details>
       <summary>파일 실행이 막혀 있다면: 명령 붙여넣기로 설치</summary>
-      <ol class="steps" style="margin-top:12px">
-        <li><div><b>아래 버튼으로 설치 명령을 복사해요.</b></div></li>
+      <ol class="steps sub">
+        <li><div><b>위에서 앱을 고른 뒤 아래 버튼으로 설치 명령을 복사해요.</b></div></li>
         <li><div><b>시작 버튼 우클릭 → "터미널(관리자)" → 예.</b><p>단축키는 <kbd>Win</kbd> + <kbd>X</kbd> 다음 <kbd>A</kbd>.</p></div></li>
         <li><div><b>창에 붙여넣고 <kbd>Enter</kbd>.</b><p>여러 줄 붙여넣기 경고가 뜨면 "붙여넣기".</p></div></li>
       </ol>
-      <div class="copyrow" style="margin-top:12px">
-        <button class="btn" id="copyBtn" type="button">설치 명령 복사</button>
+      <div class="copyrow">
+        <button class="btn ghost" id="copyBtn" type="button">설치 명령 복사</button>
         <span class="copied" id="copied" hidden>복사됐어요. 터미널(관리자)에 붙여넣어 주세요.</span>
       </div>
-      <div class="code"><textarea id="script" readonly spellcheck="false" aria-label="설치 명령">&amp; {
-# 출근 설치 키트 - 업무 앱 6종을 공식 배포처에서 최신 버전으로 자동 설치
-# 관리자 권한 PowerShell(터미널)에 붙여넣어 실행
-$ErrorActionPreference = 'Continue'
-$ProgressPreference = 'SilentlyContinue'
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if (-not $isAdmin) {
-  Write-Host ''
-  Write-Host '[!] 관리자 권한이 아닙니다. 시작 버튼 우클릭 &gt; 터미널(관리자)에서 다시 붙여넣어 주세요.' -ForegroundColor Yellow
-  return
-}
-
-$work = Join-Path $env:TEMP 'office-setup'
-New-Item -ItemType Directory -Force -Path $work | Out-Null
-$hasWinget = [bool](Get-Command winget -ErrorAction SilentlyContinue)
-$results = New-Object System.Collections.Generic.List[object]
-
-function Install-Direct([string]$url, [string]$file, [string]$silentArgs) {
-  try {
-    $path = Join-Path $work $file
-    Invoke-WebRequest -Uri $url -OutFile $path -UseBasicParsing -UserAgent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
-    if (-not (Test-Path $path) -or (Get-Item $path).Length -lt 100000) { return $false }
-    $p = Start-Process -FilePath $path -ArgumentList $silentArgs -Wait -PassThru
-    return ($p.ExitCode -eq 0)
-  } catch { return $false }
-}
-
-function Install-Winget([string]$id, [string]$source) {
-  if (-not $hasWinget) { return $false }
-  $a = @('install', '--id', $id, '--exact', '--silent', '--accept-package-agreements', '--accept-source-agreements', '--disable-interactivity')
-  if ($source) { $a += @('--source', $source) }
-  &amp; winget @a | Out-Null
-  # 0 = 설치 완료, -1978335189 = 이미 최신 버전 설치됨
-  return ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq -1978335189)
-}
-
-function Step([string]$name, [scriptblock[]]$tries, [string]$fallbackUrl) {
-  Write-Host ("  - {0} 설치 중..." -f $name) -NoNewline
-  foreach ($t in $tries) {
-    if (&amp; $t) {
-      Write-Host ' 완료' -ForegroundColor Green
-      $results.Add([pscustomobject]@{ 앱 = $name; 결과 = '완료' })
-      return
-    }
-  }
-  Write-Host ' 실패' -ForegroundColor Red
-  $results.Add([pscustomobject]@{ 앱 = $name; 결과 = '실패 - 다운로드 페이지를 열었어요' })
-  if ($fallbackUrl) { Start-Process $fallbackUrl }
-}
-
-Write-Host ''
-Write-Host '출근 설치 키트 - 6개 앱을 차례로 설치합니다. 창을 닫지 말고 기다려 주세요.' -ForegroundColor Cyan
-Write-Host ''
-
-Step '카카오톡' @(
-  { Install-Direct 'https://app-pc.kakaocdn.net/talk/win32/KakaoTalk_Setup.exe' 'KakaoTalk_Setup.exe' '/S' },
-  { Install-Winget 'Kakao.KakaoTalk' }
-) 'https://www.kakaocorp.com/page/service/service/KakaoTalk'
-
-Step '네이버웍스' @(
-  { Install-Direct 'https://download.worksmobile.com/k/wminst/r/naverworks/message_win64_install' 'NAVERWORKS_Setup.exe' '/S' },
-  { Install-Winget 'WorksMobile.NAVERWORKS' }
-) 'https://naver.worksmobile.com/download/'
-
-Step '시놀로지 드라이브' @(
-  { Install-Winget 'SynoLogy.DriveClient' }
-) 'https://www.synology.com/ko-kr/support/download'
-
-Step '말랑메모' @(
-  {
-    try {
-      $rel = Invoke-RestMethod -Uri 'https://api.github.com/repos/woori-001/Mallang/releases/latest' -UseBasicParsing -Headers @{ 'User-Agent' = 'office-setup' }
-      $asset = $rel.assets | Where-Object { $_.name -like '*.exe' -and $_.name -notlike '*.blockmap' } | Select-Object -First 1
-      if (-not $asset) { return $false }
-      Install-Direct $asset.browser_download_url $asset.name '/S'
-    } catch { $false }
-  }
-) 'https://github.com/woori-001/Mallang/releases/latest'
-
-Step '클로드' @(
-  { Install-Winget 'Anthropic.Claude' },
-  { Install-Direct 'https://claude.ai/api/desktop/win32/x64/exe/latest/redirect' 'Claude_Setup.exe' '--silent' }
-) 'https://claude.ai/download'
-
-Step '챗GPT' @(
-  { Install-Winget '9NT1R1C2HH7J' 'msstore' }
-) 'https://apps.microsoft.com/detail/9NT1R1C2HH7J'
-
-Write-Host ''
-$results | Format-Table -AutoSize | Out-Host
-$failed = @($results | Where-Object { $_.결과 -ne '완료' }).Count
-if ($failed -eq 0) {
-  Write-Host '모두 설치됐어요. 이 창은 닫아도 됩니다.' -ForegroundColor Green
-} else {
-  Write-Host ("{0}개 앱은 자동 설치가 안 됐어요. 열린 페이지나 설치 페이지의 개별 버튼으로 받아 주세요." -f $failed) -ForegroundColor Yellow
-}
-Remove-Item -Recurse -Force $work -ErrorAction SilentlyContinue
-}
-</textarea></div>
+      <div class="code"><textarea id="script" readonly spellcheck="false" aria-label="설치 명령"></textarea></div>
     </details>
   </section>
 
@@ -300,33 +242,38 @@ Remove-Item -Recurse -Force $work -ErrorAction SilentlyContinue
     <div class="list">
       <div class="row">
         <div class="mono" aria-hidden="true">카</div>
-        <div class="info"><div class="name">카카오톡</div><div class="how"><span class="k direct">바로 다운로드</span> · 카카오 공식 서버</div></div>
-        <a class="dl" href="https://app-pc.kakaocdn.net/talk/win32/KakaoTalk_Setup.exe" target="_blank" rel="noopener">다운로드</a>
+        <div class="info"><div class="name">카카오톡 <span class="req">기본</span></div><div class="how"><span class="k direct">바로 다운로드</span> · 카카오 공식 서버</div></div>
+        <a class="dl" href="https://app-pc.kakaocdn.net/talk/win32/KakaoTalk_Setup.exe">다운로드</a>
       </div>
       <div class="row">
         <div class="mono" aria-hidden="true">웍</div>
-        <div class="info"><div class="name">네이버웍스</div><div class="how"><span class="k direct">바로 다운로드</span> · 네이버웍스 공식 서버 (64bit)</div></div>
-        <a class="dl" href="https://download.worksmobile.com/k/wminst/r/naverworks/message_win64_install" target="_blank" rel="noopener">다운로드</a>
-      </div>
-      <div class="row">
-        <div class="mono" aria-hidden="true">시</div>
-        <div class="info"><div class="name">시놀로지 드라이브</div><div class="how"><span class="k page">공식 페이지</span> · 데스크톱 유틸리티에서 Synology Drive Client 선택</div></div>
-        <a class="dl" href="https://www.synology.com/ko-kr/support/download" target="_blank" rel="noopener">페이지 열기</a>
+        <div class="info"><div class="name">네이버웍스 <span class="req">기본</span></div><div class="how"><span class="k direct">바로 다운로드</span> · 네이버웍스 공식 서버 (64bit)</div></div>
+        <a class="dl" href="https://download.worksmobile.com/k/wminst/r/naverworks/message_win64_install">다운로드</a>
       </div>
       <div class="row">
         <div class="mono" aria-hidden="true">말</div>
-        <div class="info"><div class="name">말랑메모</div><div class="how" id="mlHow"><span class="k page">최신 릴리스</span> · MallangMemo-Setup-버전.exe 클릭</div></div>
+        <div class="info"><div class="name">말랑메모 <span class="req">기본</span></div><div class="how" id="mlHow"><span class="k page">최신 릴리스</span> · MallangMemo-Setup-버전.exe 클릭</div></div>
         <a class="dl" id="mlBtn" href="https://github.com/woori-001/Mallang/releases/latest" target="_blank" rel="noopener">페이지 열기</a>
       </div>
       <div class="row">
         <div class="mono" aria-hidden="true">C</div>
         <div class="info"><div class="name">클로드</div><div class="how"><span class="k direct">바로 다운로드</span> · Anthropic 공식 서버</div></div>
-        <a class="dl" href="https://claude.ai/api/desktop/win32/x64/exe/latest/redirect" target="_blank" rel="noopener">다운로드</a>
+        <a class="dl" href="https://claude.ai/api/desktop/win32/x64/exe/latest/redirect">다운로드</a>
       </div>
       <div class="row">
         <div class="mono" aria-hidden="true">G</div>
         <div class="info"><div class="name">챗GPT</div><div class="how"><span class="k page">MS 스토어</span> · 열린 페이지에서 "받기"</div></div>
         <a class="dl" href="https://apps.microsoft.com/detail/9NT1R1C2HH7J" target="_blank" rel="noopener">스토어 열기</a>
+      </div>
+      <div class="row">
+        <div class="mono" aria-hidden="true">CTI</div>
+        <div class="info"><div class="name">CTI통계 (CTIadmin)</div><div class="how"><span class="k direct">바로 다운로드</span> · OTO솔루션 서버 · 다운로드가 막히면 브라우저에서 "유지"</div></div>
+        <a class="dl" href="http://otosolution.com/solution/CTIadmin/CTIadmin_Setup.exe">다운로드</a>
+      </div>
+      <div class="row">
+        <div class="mono" aria-hidden="true">시</div>
+        <div class="info"><div class="name">시놀로지 드라이브</div><div class="how"><span class="k page">공식 페이지</span> · DS925+ / DSM 7.4 · 데스크톱 유틸리티의 Synology Drive Client</div></div>
+        <a class="dl" href="https://www.synology.com/ko-kr/support/download/DS925+?version=7.4#utilities" target="_blank" rel="noopener">페이지 열기</a>
       </div>
     </div>
   </section>
@@ -339,28 +286,82 @@ Remove-Item -Recurse -Force $work -ErrorAction SilentlyContinue
 
 <script>
 (function () {
-  var d = new Date();
-  var days = ['일', '월', '화', '수', '목', '금', '토'];
-  var t = document.getElementById('today');
-  t.textContent = d.getFullYear() + '. ' + (d.getMonth() + 1) + '. ' + d.getDate() + '. (' + days[d.getDay()] + ')  오늘 아침 설치';
+  var d = new Date(), days = ['일', '월', '화', '수', '목', '금', '토'];
+  document.getElementById('today').textContent = d.getFullYear() + '. ' + (d.getMonth() + 1) + '. ' + d.getDate() + '. (' + days[d.getDay()] + ')  오늘 아침 설치';
 
-  var btn = document.getElementById('copyBtn');
+  var boxes = [].slice.call(document.querySelectorAll('#optChips input'));
+  var ps = '';
   var ta = document.getElementById('script');
-  var msg = document.getElementById('copied');
-  function done() { msg.hidden = false; btn.textContent = '다시 복사'; }
-  function fallback() {
-    var det = ta.closest('details'); if (det) det.open = true;
-    ta.focus(); ta.select();
-    try { if (document.execCommand('copy')) { done(); return; } } catch (e) {}
-    msg.textContent = '자동 복사가 안 됐어요. 선택된 내용을 Ctrl + C로 복사해 주세요.';
-    msg.hidden = false;
+
+  function picked() { return boxes.filter(function (b) { return b.checked; }).map(function (b) { return b.value; }); }
+  function pickLine() {
+    var p = picked();
+    return '$Pick = @(' + p.map(function (k) { return "'" + k + "'"; }).join(',') + ')';
   }
-  btn.addEventListener('click', function () {
-    var text = ta.value;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, fallback);
-    } else { fallback(); }
+  function refresh() {
+    boxes.forEach(function (b) { b.parentNode.classList.toggle('on', b.checked); });
+    var p = picked();
+    document.getElementById('count').textContent = 3 + p.length;
+    ta.value = ps ? pickLine() + '\n' + ps : '설치 명령을 불러오는 중이에요...';
+    document.getElementById('presetWrap').hidden = p.length === 0;
+    try { localStorage.setItem('office-setup-pick', p.join(',')); } catch (e) {}
+  }
+
+  // 선택 복원: 링크의 ?pick= 이 우선, 없으면 이 브라우저에 저장된 선택
+  var init = null;
+  var m = location.search.match(/[?&]pick=([a-z,]*)/);
+  if (m) init = m[1]; else { try { init = localStorage.getItem('office-setup-pick'); } catch (e) {} }
+  if (init) boxes.forEach(function (b) { b.checked = init.split(',').indexOf(b.value) >= 0; });
+  boxes.forEach(function (b) { b.addEventListener('change', refresh); });
+
+  fetch('install-all.ps1', { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (t) { ps = t.replace(/^﻿/, ''); refresh(); });
+  refresh();
+
+  function batText() {
+    var head = [
+      '@echo off',
+      'rem Office setup kit - installs work apps with admin rights',
+      'net session >nul 2>&1',
+      'if errorlevel 1 (',
+      '  powershell -NoProfile -Command "Start-Process -FilePath \'%~f0\' -Verb RunAs"',
+      '  exit /b',
+      ')',
+      'powershell -NoProfile -ExecutionPolicy Bypass -Command "$m=\'#PS1\'+\'START#\'; $t=Get-Content -LiteralPath \'%~f0\' -Encoding UTF8 -Raw; iex ($t.Substring($t.IndexOf($m)+$m.Length))"',
+      'echo.',
+      'pause',
+      'exit /b',
+      '#PS1START#'
+    ].join('\r\n');
+    return head + '\r\n' + pickLine() + '\r\n' + ps.replace(/\r?\n/g, '\r\n');
+  }
+
+  document.getElementById('batBtn').addEventListener('click', function () {
+    if (!ps) { location.href = 'install-all.bat'; return; }
+    var url = URL.createObjectURL(new Blob([batText()], { type: 'application/octet-stream' }));
+    var a = document.createElement('a');
+    a.href = url; a.download = 'install-all.bat';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
   });
+
+  function copyText(text, onDone, onFail) {
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(onDone, onFail);
+    else onFail();
+  }
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var msg = document.getElementById('copied');
+    copyText(ta.value, function () { msg.hidden = false; }, function () {
+      ta.focus(); ta.select();
+      try { if (document.execCommand('copy')) { msg.hidden = false; return; } } catch (e) {}
+      msg.textContent = '자동 복사가 안 됐어요. 선택된 내용을 Ctrl + C로 복사해 주세요.'; msg.hidden = false;
+    });
+  });
+  document.getElementById('presetBtn').addEventListener('click', function () {
+    var link = location.origin + location.pathname + '?pick=' + picked().join(',');
+    var btn = this;
+    copyText(link, function () { btn.textContent = '복사됨'; }, function () { btn.textContent = link; });
+  });
+
   fetch('https://api.github.com/repos/woori-001/Mallang/releases/latest')
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (rel) {
