@@ -1,6 +1,6 @@
 & {
 # 출근 설치 키트 - 업무 앱을 공식 배포처에서 최신 버전으로 동시에 설치
-# 기본: 카카오톡, 네이버웍스, 말랑메모 / 선택: 클로드, 챗GPT, CTI통계, 시놀로지 드라이브
+# 기본: 카카오톡, 네이버웍스, 말랑메모, 샌드박스 / 선택: 클로드, 챗GPT, CTI통계, 시놀로지 드라이브
 # 선택 앱은 맨 위의 $Pick 으로 정해요. 예: $Pick = @('claude','chatgpt','cti','synology')
 $ErrorActionPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
@@ -37,6 +37,9 @@ $apps = @(
   @{ key = 'mallang'; name = '말랑메모'; required = $true; est = 30
      tries = @(@{ kind = 'github'; repo = 'woori-001/Mallang'; args = '/S' })
      page = 'https://github.com/woori-001/Mallang/releases/latest' },
+  @{ key = 'sandboxie'; name = '샌드박스'; required = $true; est = 40
+     tries = @(@{ kind = 'github'; repo = 'sandboxie-plus/Sandboxie'; pattern = 'Sandboxie-Plus-x64-v*.exe'; args = '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-' })
+     page = 'https://sandboxie-plus.com/downloads/' },
   @{ key = 'claude'; name = '클로드'; required = $false; est = 45
      tries = @(
        @{ kind = 'winget'; id = 'Anthropic.Claude' },
@@ -123,7 +126,8 @@ $installJob = {
         }
         'github' {
           $rel = Invoke-RestMethod -Uri ('https://api.github.com/repos/{0}/releases/latest' -f $t.repo) -UseBasicParsing -Headers @{ 'User-Agent' = 'office-setup' }
-          $asset = $rel.assets | Where-Object { $_.name -like '*.exe' } | Select-Object -First 1
+          $pat = '*.exe'; if ($t.pattern) { $pat = $t.pattern }
+          $asset = $rel.assets | Where-Object { $_.name -like $pat } | Select-Object -First 1
           if (-not $asset) { return $false }
           return (Run-Installer (Get-File $asset.browser_download_url $asset.name) $t.args)
         }

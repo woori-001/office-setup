@@ -92,7 +92,12 @@ button { font-family: inherit; }
 
 /* app picker */
 .pick-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; align-content: start; }
+.tiles { display: grid; gap: 16px; align-content: start; }
+.tile-group { display: grid; gap: 8px; }
+.tile-label { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .02em; }
+.tile-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 1280px) { .tile-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .tile-row { grid-template-columns: 1fr; } }
 .chk { position: relative; display: flex; align-items: center; gap: 12px; padding: 13px 14px; border: 1.5px solid var(--line); border-radius: 13px; cursor: pointer; background: var(--card); transition: border-color .15s, background .15s; }
 .chk input { position: absolute; opacity: 0; pointer-events: none; }
 .chk .mono { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 14px; background: var(--bg); color: var(--muted); flex: none; transition: background .15s, color .15s; }
@@ -222,7 +227,7 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
 
     <section class="panel" id="install" aria-labelledby="h-install">
       <div class="panel-head">
-        <div><h2 id="h-install">설치할 앱 고르기</h2><p>기본 3개는 항상 설치돼요 · 필요한 앱만 추가로 선택</p></div>
+        <div><h2 id="h-install">설치할 앱 고르기</h2><p>기본 4개는 항상 설치돼요 · 필요한 앱만 추가로 선택</p></div>
         <div class="seg" role="group" aria-label="빠른 선택">
           <button type="button" id="selBase" class="on">기본만</button>
           <button type="button" id="selAll">전체 선택</button>
@@ -230,13 +235,18 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
       </div>
       <div class="pick-wrap">
         <div class="tiles" id="tiles">
-          <label class="chk on req"><input type="checkbox" checked disabled><span class="mono">카</span><span class="txt"><b>카카오톡<span class="tag">기본</span></b><small>카카오 공식 서버</small></span><span class="tick" aria-hidden="true">✓</span></label>
-          <label class="chk on req"><input type="checkbox" checked disabled><span class="mono">웍</span><span class="txt"><b>네이버웍스<span class="tag">기본</span></b><small>네이버웍스 공식 서버</small></span><span class="tick" aria-hidden="true">✓</span></label>
-          <label class="chk on req"><input type="checkbox" checked disabled><span class="mono">말</span><span class="txt"><b>말랑메모<span class="tag">기본</span></b><small>GitHub 최신 릴리스</small></span><span class="tick" aria-hidden="true">✓</span></label>
-          <label class="chk"><input type="checkbox" id="opt-claude" value="claude" data-name="클로드" data-sc="1"><span class="mono">C</span><span class="txt"><b>클로드</b><small>Anthropic 공식</small></span><span class="tick" aria-hidden="true">✓</span></label>
-          <label class="chk"><input type="checkbox" id="opt-chatgpt" value="chatgpt" data-name="챗GPT" data-sc="1"><span class="mono">G</span><span class="txt"><b>챗GPT</b><small>MS 스토어</small></span><span class="tick" aria-hidden="true">✓</span></label>
-          <label class="chk"><input type="checkbox" id="opt-cti" value="cti" data-name="CTI통계"><span class="mono">CTI</span><span class="txt"><b>CTI통계</b><small>OTO솔루션 CTIadmin</small></span><span class="tick" aria-hidden="true">✓</span></label>
-          <label class="chk"><input type="checkbox" id="opt-synology" value="synology" data-name="시놀로지"><span class="mono">시</span><span class="txt"><b>시놀로지 드라이브</b><small>Synology 공식 최신</small></span><span class="tick" aria-hidden="true">✓</span></label>
+          <div class="tile-group"><div class="tile-label">기본 설치 · 항상 포함</div><div class="tile-row">
+            <label class="chk on req"><input type="checkbox" checked disabled><span class="mono">카</span><span class="txt"><b>카카오톡<span class="tag">기본</span></b><small>카카오 공식 서버</small></span><span class="tick" aria-hidden="true">✓</span></label>
+            <label class="chk on req"><input type="checkbox" checked disabled><span class="mono">웍</span><span class="txt"><b>네이버웍스<span class="tag">기본</span></b><small>네이버웍스 공식 서버</small></span><span class="tick" aria-hidden="true">✓</span></label>
+            <label class="chk on req"><input type="checkbox" checked disabled><span class="mono">말</span><span class="txt"><b>말랑메모<span class="tag">기본</span></b><small>GitHub 최신 릴리스</small></span><span class="tick" aria-hidden="true">✓</span></label>
+            <label class="chk on req"><input type="checkbox" checked disabled><span class="mono">S</span><span class="txt"><b>샌드박스<span class="tag">기본</span></b><small>Sandboxie-Plus 최신</small></span><span class="tick" aria-hidden="true">✓</span></label>
+          </div></div>
+          <div class="tile-group"><div class="tile-label">선택 설치 · 필요한 것만</div><div class="tile-row">
+            <label class="chk"><input type="checkbox" id="opt-claude" value="claude" data-name="클로드" data-sc="1"><span class="mono">C</span><span class="txt"><b>클로드</b><small>Anthropic 공식</small></span><span class="tick" aria-hidden="true">✓</span></label>
+            <label class="chk"><input type="checkbox" id="opt-chatgpt" value="chatgpt" data-name="챗GPT" data-sc="1"><span class="mono">G</span><span class="txt"><b>챗GPT</b><small>MS 스토어</small></span><span class="tick" aria-hidden="true">✓</span></label>
+            <label class="chk"><input type="checkbox" id="opt-cti" value="cti" data-name="CTI통계"><span class="mono">CTI</span><span class="txt"><b>CTI통계</b><small>OTO솔루션 CTIadmin</small></span><span class="tick" aria-hidden="true">✓</span></label>
+            <label class="chk"><input type="checkbox" id="opt-synology" value="synology" data-name="시놀로지"><span class="mono">시</span><span class="txt"><b>시놀로지 드라이브</b><small>Synology 공식 최신</small></span><span class="tick" aria-hidden="true">✓</span></label>
+          </div></div>
         </div>
         <div class="runbox">
           <h3>설치 순서</h3>
@@ -249,7 +259,7 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
   카카오톡    ■■■■■■■■■■  100%  <span class="g">완료</span>
   네이버웍스  ■■■■■■■□□□   74%  설치 중
   말랑메모    ■■■■□□□□□□   42%  다운로드 70%</div>
-          <button class="btn primary" type="button" data-bat>설치 파일 받기 · <span id="btnCount">3</span>개 앱</button>
+          <button class="btn primary" type="button" data-bat>설치 파일 받기 · <span id="btnCount">4</span>개 앱</button>
           <div class="preset" id="presetWrap" hidden>이 선택을 링크로 저장 <button class="linkbtn" id="presetBtn" type="button">링크 복사</button></div>
         </div>
       </div>
@@ -266,6 +276,7 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
             <tr><td class="app-cell">카카오톡</td><td><span class="badge req">기본</span></td><td>카카오</td><td class="how"><span class="k direct">바로 다운로드</span></td><td class="btn-cell"><a class="dl" href="https://app-pc.kakaocdn.net/talk/win32/KakaoTalk_Setup.exe">다운로드</a></td></tr>
             <tr><td class="app-cell">네이버웍스 <span class="sub">64bit</span></td><td><span class="badge req">기본</span></td><td>네이버웍스</td><td class="how"><span class="k direct">바로 다운로드</span></td><td class="btn-cell"><a class="dl" href="https://download.worksmobile.com/k/wminst/r/naverworks/message_win64_install">다운로드</a></td></tr>
             <tr><td class="app-cell">말랑메모 <span class="sub" id="mlVer"></span></td><td><span class="badge req">기본</span></td><td>GitHub 릴리스</td><td class="how" id="mlHow"><span class="k page">릴리스 페이지</span> · exe 클릭</td><td class="btn-cell"><a class="dl" id="mlBtn" href="https://github.com/woori-001/Mallang/releases/latest" target="_blank" rel="noopener">페이지 열기</a></td></tr>
+            <tr><td class="app-cell">샌드박스 <span class="sub">Sandboxie-Plus x64</span></td><td><span class="badge req">기본</span></td><td>GitHub 릴리스</td><td class="how" id="sbHow"><span class="k page">릴리스 페이지</span></td><td class="btn-cell"><a class="dl" id="sbBtn" href="https://github.com/sandboxie-plus/Sandboxie/releases/latest" target="_blank" rel="noopener">페이지 열기</a></td></tr>
             <tr><td class="app-cell">클로드</td><td><span class="badge opt">선택</span></td><td>Anthropic</td><td class="how"><span class="k direct">바로 다운로드</span></td><td class="btn-cell"><a class="dl" href="https://claude.ai/api/desktop/win32/x64/exe/latest/redirect">다운로드</a></td></tr>
             <tr><td class="app-cell">챗GPT</td><td><span class="badge opt">선택</span></td><td>MS 스토어</td><td class="how"><span class="k page">스토어</span> · "받기" 클릭</td><td class="btn-cell"><a class="dl" href="https://apps.microsoft.com/detail/9NT1R1C2HH7J" target="_blank" rel="noopener">스토어 열기</a></td></tr>
             <tr><td class="app-cell">CTI통계 <span class="sub">CTIadmin</span></td><td><span class="badge opt">선택</span></td><td>OTO솔루션</td><td class="how"><span class="k direct">바로 다운로드</span> · 막히면 "유지"</td><td class="btn-cell"><a class="dl" href="http://otosolution.com/solution/CTIadmin/CTIadmin_Setup.exe">다운로드</a></td></tr>
@@ -313,12 +324,12 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
 
   function refresh() {
     boxes.forEach(function (b) { b.closest('.chk').classList.toggle('on', b.checked); });
-    var p = picked(), total = 3 + p.length;
+    var p = picked(), total = 4 + p.length;
     setText('kCount', total);
     document.getElementById('btnCount').textContent = total;
-    setText('kSplit', '기본 3 · 선택 ' + p.length);
-    setText('kNames', ['카카오톡', '네이버웍스', '말랑메모'].concat(p.map(function (b) { return b.dataset.name; })).join(' · '));
-    setText('kTime', total <= 3 ? '약 40초' : '약 1분');
+    setText('kSplit', '기본 4 · 선택 ' + p.length);
+    setText('kNames', ['카카오톡', '네이버웍스', '말랑메모', '샌드박스'].concat(p.map(function (b) { return b.dataset.name; })).join(' · '));
+    setText('kTime', total <= 4 ? '약 40초' : '약 1분');
     var sc = ['카카오톡'].concat(p.filter(function (b) { return b.dataset.sc; }).map(function (b) { return b.dataset.name; }));
     setText('kSc', sc.length);
     setText('kScNames', sc.join(' · '));
@@ -401,6 +412,16 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
       document.getElementById('mlVer').textContent = tag;
       setText('kMl', tag);
       document.getElementById('mlSide').textContent = tag;
+    }).catch(function () {});
+  fetch('https://api.github.com/repos/sandboxie-plus/Sandboxie/releases/latest')
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (rel) {
+      if (!rel || !rel.assets) return;
+      var a = rel.assets.filter(function (x) { return /^Sandboxie-Plus-x64-v.*\.exe$/i.test(x.name); })[0];
+      if (!a) return;
+      var b = document.getElementById('sbBtn');
+      b.href = a.browser_download_url; b.textContent = '다운로드'; b.removeAttribute('target');
+      document.getElementById('sbHow').innerHTML = '<span class="k direct">바로 다운로드</span> · ' + String(rel.tag_name).replace(/[<>&]/g, '');
     }).catch(function () {});
 })();
 </script>
