@@ -92,7 +92,7 @@ button { font-family: inherit; }
 
 /* app picker */
 .pick-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; align-content: start; }
 .chk { position: relative; display: flex; align-items: center; gap: 12px; padding: 13px 14px; border: 1.5px solid var(--line); border-radius: 13px; cursor: pointer; background: var(--card); transition: border-color .15s, background .15s; }
 .chk input { position: absolute; opacity: 0; pointer-events: none; }
 .chk .mono { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 14px; background: var(--bg); color: var(--muted); flex: none; transition: background .15s, color .15s; }
@@ -118,7 +118,7 @@ button { font-family: inherit; }
 .linkbtn { border: 0; background: none; padding: 0; color: var(--side); font-weight: 700; cursor: pointer; text-decoration: underline; font-size: 12px; word-break: break-all; }
 
 /* console preview */
-.console { background: #0f1729; color: #c9d4ea; border-radius: 10px; padding: 12px 12px 10px; font: 11px/1.7 ui-monospace, Consolas, monospace; overflow-x: auto; white-space: pre; }
+.console { background: #0f1729; color: #c9d4ea; border-radius: 10px; padding: 12px 12px 10px; font: 10.5px/1.7 Consolas, "Malgun Gothic", ui-monospace, monospace; overflow: hidden; white-space: pre; }
 .console .g { color: #4ade80; }
 .console .c { color: #7dd3fc; }
 
@@ -277,7 +277,7 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
             <li><span><b>진행률 보며 기다리기</b>끝나면 바탕화면에 바로가기가 생겨요</span></li>
           </ol>
           <div class="console" aria-label="설치 화면 예시"><span class="c">  출근 설치 키트</span>
-  카카오톡    ■■■■■■■■■■  100%  <span class="g">완료 (21초)</span>
+  카카오톡    ■■■■■■■■■■  100%  <span class="g">완료</span>
   네이버웍스  ■■■■■■■□□□   74%  설치 중
   말랑메모    ■■■■□□□□□□   42%  다운로드 70%</div>
           <button class="btn primary" type="button" data-bat>설치 파일 받기 · <span id="btnCount">3</span>개 앱</button>
