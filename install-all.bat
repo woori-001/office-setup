@@ -39,6 +39,7 @@ $apps = @(
   @{ key = 'kakao'; name = '카카오톡'; required = $true; est = 25
      tries = @(
        @{ kind = 'direct'; url = 'https://app-pc.kakaocdn.net/talk/win32/KakaoTalk_Setup.exe'; file = 'KakaoTalk_Setup.exe'; args = '/S' },
+       @{ kind = 'direct'; url = 'https://app-pc.kakaocdn.net/talk/win32/x64/KakaoTalk_Setup.exe'; file = 'KakaoTalk_Setup_x64.exe'; args = '/S' },
        @{ kind = 'winget'; id = 'Kakao.KakaoTalk' })
      shortcut = @{ name = '카카오톡'; paths = @('%ProgramFiles(x86)%\Kakao\KakaoTalk\KakaoTalk.exe', '%ProgramFiles%\Kakao\KakaoTalk\KakaoTalk.exe', '%LOCALAPPDATA%\Kakao\KakaoTalk\KakaoTalk.exe'); start = '^KakaoTalk|카카오톡' }
      page = 'https://www.kakaocorp.com/page/service/service/KakaoTalk' },
@@ -87,28 +88,47 @@ $installJob = {
   function Set-Status([string]$s) { try { [IO.File]::WriteAllText($statusFile, $s) } catch { } }
 
   function Get-File([string]$url, [string]$file) {
+    # 멈춤 감지(20초 동안 데이터가 안 오면 중단) + 받다 끊기면 최대 3번 다시 받기
     $path = Join-Path $work $file
-    Set-Status 'dl:0'
-    $req = [Net.HttpWebRequest]::Create($url)
-    $req.UserAgent = $ua
-    $req.AllowAutoRedirect = $true
-    $resp = $req.GetResponse()
-    $total = $resp.ContentLength
-    $in = $resp.GetResponseStream()
-    $out = [IO.File]::Create($path)
-    try {
-      $buf = New-Object byte[] 262144
-      $done = 0; $last = -1
-      while (($n = $in.Read($buf, 0, $buf.Length)) -gt 0) {
-        $out.Write($buf, 0, $n); $done += $n
-        if ($total -gt 0) {
-          $pct = [int][Math]::Floor($done * 100 / $total)
-          if ($pct -ne $last) { Set-Status ('dl:' + $pct); $last = $pct }
-        }
+    $lastErr = $null
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+      Set-Status 'dl:0:0'
+      try {
+        $req = [Net.HttpWebRequest]::Create($url)
+        $req.UserAgent = $ua
+        $req.AllowAutoRedirect = $true
+        $req.Timeout = 20000
+        $req.ReadWriteTimeout = 20000
+        $resp = $req.GetResponse()
+        $total = $resp.ContentLength
+        $in = $resp.GetResponseStream()
+        $out = [IO.File]::Create($path)
+        $done = 0
+        try {
+          $buf = New-Object byte[] 262144
+          $last = -1
+          $sw = [Diagnostics.Stopwatch]::StartNew()
+          while (($n = $in.Read($buf, 0, $buf.Length)) -gt 0) {
+            $out.Write($buf, 0, $n); $done += $n
+            $pct = 0
+            if ($total -gt 0) { $pct = [int][Math]::Floor($done * 100 / $total) }
+            if ($pct -ne $last -or ($sw.ElapsedMilliseconds % 1000) -lt 50) {
+              $kbs = 0
+              if ($sw.Elapsed.TotalSeconds -gt 0.5) { $kbs = [int]($done / 1024 / $sw.Elapsed.TotalSeconds) }
+              Set-Status ('dl:{0}:{1}' -f $pct, $kbs); $last = $pct
+            }
+          }
+        } finally { $out.Close(); $in.Close(); $resp.Close() }
+        if ($total -gt 0 -and $done -lt $total) { throw ('받다가 끊김 ({0}/{1}MB)' -f [int]($done / 1MB), [int]($total / 1MB)) }
+        if ((Get-Item $path).Length -lt 100000) { throw '파일이 비정상적으로 작음' }
+        return $path
+      } catch {
+        $lastErr = $_.Exception.Message
+        Set-Status ('retry:{0}' -f $attempt)
+        Start-Sleep -Seconds 2
       }
-    } finally { $out.Close(); $in.Close(); $resp.Close() }
-    if ((Get-Item $path).Length -lt 100000) { throw 'download failed' }
-    return $path
+    }
+    throw ('다운로드 실패: ' + $lastErr)
   }
   function Run-Installer([string]$path, [string]$silentArgs) {
     Set-Status 'inst'
@@ -121,8 +141,18 @@ $installJob = {
       }
       return ($p.ExitCode -eq 0 -or $p.ExitCode -eq 3010)
     }
-    if ($silentArgs) { $p = Start-Process -FilePath $path -ArgumentList $silentArgs -Wait -PassThru }
-    else { $p = Start-Process -FilePath $path -Wait -PassThru }
+    # 같은 설치 파일이 이미 돌고 있으면(이전 시도가 멈춘 경우) 정리
+    $exeName = [IO.Path]::GetFileNameWithoutExtension($path)
+    Get-Process -Name $exeName -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    if ($silentArgs) { $p = Start-Process -FilePath $path -ArgumentList $silentArgs -PassThru }
+    else { $p = Start-Process -FilePath $path -PassThru }
+    # 설치 프로그램이 5분 넘게 끝나지 않으면 멈춘 것으로 보고 중단
+    $limit = 300
+    if (-not $silentArgs) { $limit = 900 }
+    if (-not $p.WaitForExit($limit * 1000)) {
+      try { & taskkill.exe /PID $p.Id /T /F | Out-Null } catch { }
+      throw '설치 프로그램이 응답 없음'
+    }
     return ($p.ExitCode -eq 0)
   }
   function Try-One($t) {
@@ -164,12 +194,14 @@ $installJob = {
           return (Run-Installer $path $sa)
         }
       }
-    } catch { return $false }
+    } catch { $script:why = $_.Exception.Message; return $false }
     return $false
   }
 
+  $script:why = $null
   $ok = $false
   foreach ($t in $app.tries) { if (Try-One $t) { $ok = $true; break } }
+  if (-not $ok -and $script:why) { Set-Status ('err:' + $script:why) }
   return $ok
 }
 
@@ -245,9 +277,20 @@ while ($doneCount -lt $rows.Count) {
   foreach ($r in $rows) {
     if ($r.state -ne 'run') { continue }
     $el = ((Get-Date) - $started).TotalSeconds
-    if ($r.job.State -ne 'Running' -and $r.job.State -ne 'NotStarted') {
-      $out = Receive-Job $r.job -ErrorAction SilentlyContinue
+    $stFile = Join-Path $work ('st-' + $r.app.key + '.txt')
+    # 한 앱이 15분을 넘기면 멈춘 것으로 보고 중단 (다른 앱은 계속 진행)
+    $timedOut = $false
+    if ($el -gt 900 -and $r.job.State -eq 'Running') {
+      Stop-Job $r.job -ErrorAction SilentlyContinue
+      $timedOut = $true
+    }
+    if ($timedOut -or ($r.job.State -ne 'Running' -and $r.job.State -ne 'NotStarted')) {
+      $out = $null
+      if (-not $timedOut) { $out = Receive-Job $r.job -ErrorAction SilentlyContinue }
       $r.ok = [bool](@($out) | Select-Object -Last 1)
+      $why = ''
+      if ($timedOut) { $why = '15분 넘게 끝나지 않음' }
+      else { try { $last = [IO.File]::ReadAllText($stFile); if ($last -like 'err:*') { $why = $last.Substring(4) } } catch { } }
       Remove-Job $r.job -Force -ErrorAction SilentlyContinue
       $r.secs = [int]$el
       if ($r.ok -and $r.app.verify) {
@@ -263,16 +306,26 @@ while ($doneCount -lt $rows.Count) {
       $r.state = 'done'
       $doneCount++
       if ($r.ok) { $r.pct = 100; $r.note = ('완료 ({0}초)' -f $r.secs) }
-      else { $r.note = '실패 - 설치 페이지를 열었어요'; try { Start-Process $r.app.page } catch { } }
+      else {
+        $r.note = '실패 - 설치 페이지를 열었어요'
+        if ($why) { $r.note = '실패 (' + $why + ')' }
+        if ($r.note.Length -gt 40) { $r.note = $r.note.Substring(0, 39) + '…)' }
+        try { Start-Process $r.app.page } catch { }
+      }
       continue
     }
     $st = ''
-    try { $st = [IO.File]::ReadAllText((Join-Path $work ('st-' + $r.app.key + '.txt'))) } catch { }
+    try { $st = [IO.File]::ReadAllText($stFile) } catch { }
     $est = [double]$r.app.est
     if ($st -like 'dl:*') {
-      $d = [int]($st.Substring(3))
+      $parts = $st.Split(':')
+      $d = [int]$parts[1]
+      $kbs = 0; if ($parts.Count -gt 2) { $kbs = [int]$parts[2] }
       $r.pct = [int]($d * 0.6)
-      $r.note = ('다운로드 중 {0}%' -f $d)
+      if ($kbs -ge 1024) { $spd = '{0:0.0}MB/s' -f ($kbs / 1024) } elseif ($kbs -gt 0) { $spd = '{0}KB/s' -f $kbs } else { $spd = '연결 중' }
+      $r.note = ('다운로드 중 {0}% · {1}' -f $d, $spd)
+    } elseif ($st -like 'retry:*') {
+      $r.note = ('연결이 끊겨 다시 받는 중 ({0}/3)' -f $st.Substring(6))
     } elseif ($st -eq 'inst' -or $st -eq 'wg') {
       if (-not $r.instAt) { $r.instAt = Get-Date }
       $ie = ((Get-Date) - $r.instAt).TotalSeconds
