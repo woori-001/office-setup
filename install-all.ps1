@@ -1,6 +1,6 @@
 & {
 # 출근 설치 키트 - 업무 앱을 공식 배포처에서 최신 버전으로 동시에 설치
-# 기본: 카카오톡, 네이버웍스, 말랑메모 / 선택: 샌드박스, 클로드, 챗GPT, CTI통계, 시놀로지 드라이브
+# 기본: 카카오톡, 네이버웍스, 말랑메모 / 선택: 샌드박스, 텔레그램, 클로드, 챗GPT, CTI통계, 시놀로지 드라이브
 # 선택 앱은 맨 위의 $Pick 으로 정해요. 예: $Pick = @('claude','chatgpt','cti','synology')
 $ErrorActionPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
@@ -60,7 +60,12 @@ $apps = @(
      page = 'https://www.synology.com/ko-kr/support/download/DS925+?version=7.4#utilities' },
   @{ key = 'sandboxie'; name = '샌드박스'; required = $false; est = 40
      tries = @(@{ kind = 'github'; repo = 'sandboxie-plus/Sandboxie'; pattern = 'Sandboxie-Plus-x64-v*.exe'; args = '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-' })
-     page = 'https://sandboxie-plus.com/downloads/' }
+     page = 'https://sandboxie-plus.com/downloads/' },
+  @{ key = 'telegram'; name = '텔레그램'; required = $false; est = 25
+     tries = @(
+       @{ kind = 'direct'; url = 'https://telegram.org/dl/desktop/win64'; file = 'tsetup-x64.exe'; args = '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-' },
+       @{ kind = 'github'; repo = 'telegramdesktop/tdesktop'; pattern = 'td-setup-win-x64-*.exe'; args = '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-' })
+     page = 'https://desktop.telegram.org/?setln=ko' }
 )
 
 # 앱 하나를 설치하는 작업 (앱마다 별도 프로세스에서 동시에 실행)

@@ -97,13 +97,13 @@ button { font-family: inherit; }
 .tile-label { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .02em; }
 .tile-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
 .tile-row.r3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.tile-row.r5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-.tile-row.r5 .chk { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; }
-.tile-row.r5 .chk .tick { position: absolute; top: 10px; right: 10px; }
-.tile-row.r5 .chk .txt { width: 100%; }
-@media (max-width: 1100px) { .tile-row.r5 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 1280px) { .tile-row.r3, .tile-row.r5 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 420px) { .tile-row.r3, .tile-row.r5 { grid-template-columns: 1fr; } }
+.tile-row.r6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.tile-row.r6 .chk { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; }
+.tile-row.r6 .chk .tick { position: absolute; top: 10px; right: 10px; }
+.tile-row.r6 .chk .txt { width: 100%; }
+@media (max-width: 1200px) { .tile-row.r6 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 1280px) { .tile-row.r3, .tile-row.r6 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .tile-row.r3, .tile-row.r6 { grid-template-columns: 1fr; } }
 .chk { position: relative; display: flex; align-items: center; gap: 12px; padding: 13px 14px; border: 1.5px solid var(--line); border-radius: 13px; cursor: pointer; background: var(--card); transition: border-color .15s, background .15s; }
 .chk input { position: absolute; opacity: 0; pointer-events: none; }
 .chk .mono { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 14px; background: var(--bg); color: var(--muted); flex: none; transition: background .15s, color .15s; }
@@ -249,12 +249,13 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
             <label class="chk on req"><input type="checkbox" checked disabled><span class="mono logo"><img src="img/works.png" alt=""></span><span class="txt"><b>네이버웍스<span class="tag">기본</span></b><small>네이버웍스 공식 서버</small></span><span class="tick" aria-hidden="true">✓</span></label>
             <label class="chk on req"><input type="checkbox" checked disabled><span class="mono logo"><img src="img/mallang.png" alt=""></span><span class="txt"><b>말랑메모<span class="tag">기본</span></b><small>GitHub 최신 릴리스</small></span><span class="tick" aria-hidden="true">✓</span></label>
           </div></div>
-          <div class="tile-group"><div class="tile-label">선택 설치 · 필요한 것만</div><div class="tile-row r5">
+          <div class="tile-group"><div class="tile-label">선택 설치 · 필요한 것만</div><div class="tile-row r6">
             <label class="chk"><input type="checkbox" id="opt-claude" value="claude" data-name="클로드" data-sc="1"><span class="mono">C</span><span class="txt"><b>클로드</b><small>Anthropic 공식</small></span><span class="tick" aria-hidden="true">✓</span></label>
             <label class="chk"><input type="checkbox" id="opt-chatgpt" value="chatgpt" data-name="챗GPT" data-sc="1"><span class="mono">G</span><span class="txt"><b>챗GPT</b><small>MS 스토어</small></span><span class="tick" aria-hidden="true">✓</span></label>
             <label class="chk"><input type="checkbox" id="opt-cti" value="cti" data-name="CTI통계"><span class="mono">CTI</span><span class="txt"><b>CTI통계</b><small>OTO솔루션 CTIadmin</small></span><span class="tick" aria-hidden="true">✓</span></label>
             <label class="chk"><input type="checkbox" id="opt-synology" value="synology" data-name="시놀로지"><span class="mono">시</span><span class="txt"><b>시놀로지</b><small>Synology Drive Client</small></span><span class="tick" aria-hidden="true">✓</span></label>
                       <label class="chk"><input type="checkbox" id="opt-sandboxie" value="sandboxie" data-name="샌드박스"><span class="mono">S</span><span class="txt"><b>샌드박스</b><small>Sandboxie-Plus</small></span><span class="tick" aria-hidden="true">✓</span></label>
+                      <label class="chk"><input type="checkbox" id="opt-telegram" value="telegram" data-name="텔레그램"><span class="mono">T</span><span class="txt"><b>텔레그램</b><small>Telegram x64</small></span><span class="tick" aria-hidden="true">✓</span></label>
           </div></div>
         </div>
         <div class="runbox">
@@ -290,7 +291,7 @@ kbd { font: 600 11.5px ui-monospace, Consolas, monospace; border: 1px solid var(
             <tr><td class="app-cell">CTI통계 <span class="sub">CTIadmin</span></td><td><span class="badge opt">선택</span></td><td>OTO솔루션</td><td class="how"><span class="k direct">바로 다운로드</span> · 막히면 "유지"</td><td class="btn-cell"><a class="dl" href="http://otosolution.com/solution/CTIadmin/CTIadmin_Setup.exe">다운로드</a></td></tr>
             <tr><td class="app-cell">시놀로지 드라이브</td><td><span class="badge opt">선택</span></td><td>Synology · DS925+</td><td class="how"><span class="k page">공식 페이지</span> · DSM 7.4 유틸리티</td><td class="btn-cell"><a class="dl" href="https://www.synology.com/ko-kr/support/download/DS925+?version=7.4#utilities" target="_blank" rel="noopener">페이지 열기</a></td></tr>
             <tr><td class="app-cell">샌드박스 <span class="sub">Sandboxie-Plus x64</span></td><td><span class="badge opt">선택</span></td><td>GitHub 릴리스</td><td class="how" id="sbHow"><span class="k page">릴리스 페이지</span></td><td class="btn-cell"><a class="dl" id="sbBtn" href="https://github.com/sandboxie-plus/Sandboxie/releases/latest" target="_blank" rel="noopener">페이지 열기</a></td></tr>
-            <tr><td class="app-cell">텔레그램 <span class="sub">x64</span></td><td><span class="badge opt">개별</span></td><td>텔레그램 공식</td><td class="how"><span class="k direct">바로 다운로드</span> · 항상 최신 정식 버전</td><td class="btn-cell"><a class="dl" href="https://telegram.org/dl/desktop/win64">다운로드</a></td></tr>
+            <tr><td class="app-cell">텔레그램 <span class="sub">x64</span></td><td><span class="badge opt">선택</span></td><td>텔레그램 공식</td><td class="how"><span class="k direct">바로 다운로드</span> · 항상 최신 정식 버전</td><td class="btn-cell"><a class="dl" href="https://telegram.org/dl/desktop/win64">다운로드</a></td></tr>
           </tbody>
         </table>
       </div>
